@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 # ✅ Gemini client (NEW SDK)
 <<<<<<< HEAD
-client = genai.Client(api_key=os.getenv("AIzaSyCMDDkIYXOQYgGkW69jBjYSYNF-kAToqPE"))
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 =======
 client = genai.Client(api_key=os.getenv(GEMINI_API_KEY"))
 >>>>>>> 1314dd2c1c4821460c1f9af81342a5d06e938fb2
