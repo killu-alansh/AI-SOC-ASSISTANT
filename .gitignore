@@ -1,0 +1,8 @@
+venv/
+.env
+soc.db
+__pycache__/
+*.pyc
+*.pyo
+reports/*.pdf
+.DS_Store

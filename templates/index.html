@@ -1,0 +1,556 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI SOC Analyst Assistant</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0a0e1a;
+            color: #e0e6f0;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1a2340, #0d1526);
+            padding: 20px 30px;
+            border-bottom: 2px solid #2a4a8a;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #4a9eff;
+        }
+        
+        .header .subtitle {
+            font-size: 13px;
+            color: #8899bb;
+        }
+        
+        .badge {
+            background: #1e3a6e;
+            color: #4a9eff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            border: 1px solid #2a5aaa;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .panel {
+            background: #111827;
+            border: 1px solid #1e2d4a;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .panel h2 {
+            font-size: 16px;
+            color: #4a9eff;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        textarea {
+            width: 100%;
+            height: 300px;
+            background: #0d1526;
+            border: 1px solid #1e3a6e;
+            border-radius: 8px;
+            color: #c8d8f0;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+            outline: none;
+        }
+        
+        textarea:focus {
+            border-color: #4a9eff;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #1a5aaa, #0d3a7a);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+            margin-top: 15px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(135deg, #2a6abb, #1a4a8a);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #1a4a2a, #0d3a1a);
+            margin-top: 10px;
+        }
+        
+        .severity-badge {
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .critical { background: #dc3545; color: white; }
+        .high { background: #ff851b; color: white; }
+        .medium { background: #ffc107; color: #000; }
+        .low { background: #28a745; color: white; }
+        .info { background: #17a2b8; color: white; }
+        
+        .result-section {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: #0d1526;
+            border-radius: 8px;
+            border-left: 3px solid #4a9eff;
+        }
+        
+        .result-section h3 {
+            font-size: 12px;
+            color: #8899bb;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .result-section p {
+            font-size: 14px;
+            color: #c8d8f0;
+            line-height: 1.5;
+        }
+        
+        .mitre-badge {
+            background: #2a1a4a;
+            color: #cc88ff;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid #4a2a8a;
+            display: inline-block;
+        }
+        
+        .action-list {
+            list-style: none;
+        }
+        
+        .action-list li {
+            padding: 6px 0;
+            font-size: 13px;
+            color: #c8d8f0;
+            border-bottom: 1px solid #1e2d4a;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+        
+        .action-list li::before {
+            content: '→';
+            color: #4a9eff;
+            flex-shrink: 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #4a9eff;
+            display: none;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #1e3a6e;
+            border-top: 3px solid #4a9eff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 13px;
+        }
+        
+        .history-table th {
+            background: #1a2340;
+            padding: 10px;
+            text-align: left;
+            color: #8899bb;
+            font-weight: 600;
+        }
+        
+        .history-table td {
+            padding: 10px;
+            border-bottom: 1px solid #1e2d4a;
+            color: #c8d8f0;
+        }
+        
+        .sample-logs {
+            margin-top: 10px;
+        }
+        
+        .sample-btn {
+            background: #1a2340;
+            border: 1px solid #2a4a8a;
+            color: #8899bb;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            margin: 4px;
+            transition: all 0.2s;
+        }
+        
+        .sample-btn:hover {
+            background: #1e3a6e;
+            color: #4a9eff;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .stat-card {
+            background: #111827;
+            border: 1px solid #1e2d4a;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4a9eff;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #8899bb;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>🛡️ AI SOC Analyst Assistant</h1>
+        <div class="subtitle">Powered by Claude AI — Intelligent Security Log Analysis</div>
+    </div>
+    <span class="badge">v1.0</span>
+    <span class="badge">Built by Alan</span>
+</div>
+
+<div class="stats-bar">
+    <div class="stat-card">
+        <div class="stat-number" id="total-analyses">0</div>
+        <div class="stat-label">Total Analyses</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" id="critical-count" style="color:#dc3545">0</div>
+        <div class="stat-label">Critical Alerts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" id="high-count" style="color:#ff851b">0</div>
+        <div class="stat-label">High Alerts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number" id="attacks-detected" style="color:#28a745">0</div>
+        <div class="stat-label">Attacks Detected</div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Input Panel -->
+    <div class="panel">
+        <h2>📋 Log Input</h2>
+        
+        <div class="sample-logs">
+            <span style="font-size:12px; color:#8899bb;">Quick samples: </span>
+            <button class="sample-btn" onclick="loadSample('bruteforce')">Brute Force</button>
+            <button class="sample-btn" onclick="loadSample('sqli')">SQL Injection</button>
+            <button class="sample-btn" onclick="loadSample('malware')">Malware</button>
+            <button class="sample-btn" onclick="loadSample('privilege')">Priv Escalation</button>
+            <button class="sample-btn" onclick="loadSample('normal')">Normal Log</button>
+        </div>
+        
+        <textarea id="log-input" 
+            placeholder="Paste your security log here...
+
+Example:
+Mar 29 17:54:33 server sshd[1234]: Failed password for invalid user admin from 192.168.1.100 port 54321 ssh2
+Mar 29 17:54:34 server sshd[1234]: Failed password for invalid user root from 192.168.1.100 port 54321 ssh2
+Mar 29 17:54:35 server sshd[1234]: Failed password for invalid user admin from 192.168.1.100 port 54321 ssh2"></textarea>
+        
+        <button class="btn" onclick="analyzeLog()">
+            🔍 Analyze with AI
+        </button>
+        <button class="btn btn-secondary" onclick="clearAll()">
+            🗑️ Clear
+        </button>
+    </div>
+
+    <!-- Results Panel -->
+    <div class="panel">
+        <h2>🤖 AI Analysis Results</h2>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>AI is analyzing your log...</p>
+        </div>
+        
+        <div id="results" style="display:none">
+            <div id="severity-display"></div>
+            
+            <div class="result-section">
+                <h3>Attack Type</h3>
+                <p id="attack-type"></p>
+            </div>
+            
+            <div class="result-section">
+                <h3>MITRE ATT&CK</h3>
+                <span class="mitre-badge" id="mitre-technique"></span>
+                <span style="font-size:13px; color:#8899bb; margin-left:10px" id="mitre-tactic"></span>
+            </div>
+            
+            <div class="result-section">
+                <h3>AI Summary</h3>
+                <p id="summary"></p>
+            </div>
+            
+            <div class="result-section">
+                <h3>Immediate Actions</h3>
+                <ul class="action-list" id="actions"></ul>
+            </div>
+            
+            <div class="result-section">
+                <h3>Investigation Steps</h3>
+                <ul class="action-list" id="steps"></ul>
+            </div>
+            
+            <div style="display:flex; gap:10px; margin-top:10px">
+                <div class="result-section" style="flex:1">
+                    <h3>False Positive</h3>
+                    <p id="fp-chance"></p>
+                </div>
+                <div class="result-section" style="flex:1">
+                    <h3>AI Confidence</h3>
+                    <p id="confidence" style="color:#4a9eff; font-weight:bold;"></p>
+                </div>
+            </div>
+            
+            <button class="btn btn-secondary" onclick="exportPDF()">
+                📄 Export PDF Report
+            </button>
+        </div>
+        
+        <div id="placeholder" style="text-align:center; padding:60px; color:#4a5a7a">
+            <div style="font-size:50px">🛡️</div>
+            <p style="margin-top:15px">Paste a security log and click Analyze</p>
+            <p style="font-size:12px; margin-top:8px; color:#3a4a6a">Supports Wazuh, Windows Event Logs, Syslog, Apache logs</p>
+        </div>
+    </div>
+
+    <!-- History Table -->
+    <div class="panel full-width">
+        <h2>📊 Analysis History</h2>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Severity</th>
+                    <th>Attack Type</th>
+                    <th>MITRE Technique</th>
+                </tr>
+            </thead>
+            <tbody id="history-body">
+                {% for row in history %}
+                <tr>
+                    <td>{{ row[1] }}</td>
+                    <td><span class="severity-badge {{ row[3]|lower }}">{{ row[3] }}</span></td>
+                    <td>{{ row[4] }}</td>
+                    <td><span class="mitre-badge">{{ row[5] }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+let currentAnalysis = null;
+let stats = { total: 0, critical: 0, high: 0, attacks: 0 };
+
+const samples = {
+    bruteforce: `Mar 29 17:54:33 kali sshd[1234]: Failed password for invalid user admin from 192.168.1.100 port 54321 ssh2
+Mar 29 17:54:34 kali sshd[1235]: Failed password for root from 192.168.1.100 port 54322 ssh2
+Mar 29 17:54:35 kali sshd[1236]: Failed password for admin from 192.168.1.100 port 54323 ssh2
+Mar 29 17:54:36 kali sshd[1237]: Failed password for admin from 192.168.1.100 port 54324 ssh2
+Mar 29 17:54:37 kali sshd[1238]: Failed password for admin from 192.168.1.100 port 54325 ssh2`,
+    
+    sqli: `192.168.1.50 - - [29/Mar/2026:17:30:00] "GET /login.php?id=1'%20OR%20'1'='1 HTTP/1.1" 200 4521
+192.168.1.50 - - [29/Mar/2026:17:30:01] "GET /login.php?id=1%20UNION%20SELECT%20username,password%20FROM%20users HTTP/1.1" 200 1234
+192.168.1.50 - - [29/Mar/2026:17:30:02] "GET /login.php?id=1;DROP%20TABLE%20users-- HTTP/1.1" 500 234`,
+    
+    malware: `Mar 29 2026 17:45:23 Windows Security EventID 4688: New process created
+Process: C:\\Users\\Public\\svchost32.exe
+Parent: C:\\Windows\\System32\\cmd.exe
+CommandLine: svchost32.exe -c "powershell -enc JABjAD0ATgBlAHcALQBPAGIAagBlAGMAdA"
+User: DESKTOP-ABC\\user1`,
+    
+    privilege: `Mar 30 02:04:34 DESKTOP-HPPC98R Security EventID 4732
+Account: hacker2
+Group: Administrators
+Changed by: abhin
+Domain: DESKTOP-HPPC98R
+SID: S-1-5-32-544`,
+    
+    normal: `Mar 29 08:00:01 webserver apache[1234]: 192.168.1.10 - - "GET /index.html HTTP/1.1" 200 1234
+Mar 29 08:00:05 webserver apache[1234]: 192.168.1.11 - - "GET /about.html HTTP/1.1" 200 2345
+Mar 29 08:00:10 webserver apache[1234]: 192.168.1.12 - - "POST /contact.php HTTP/1.1" 200 345`
+};
+
+function loadSample(type) {
+    document.getElementById('log-input').value = samples[type];
+}
+
+async function analyzeLog() {
+    const logText = document.getElementById('log-input').value;
+    if (!logText.trim()) {
+        alert('Please paste a log first');
+        return;
+    }
+    
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('placeholder').style.display = 'none';
+    
+    try {
+        const response = await fetch('/analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ log: logText })
+        });
+        
+        const data = await response.json();
+        currentAnalysis = data;
+        displayResults(data);
+        updateStats(data);
+        
+    } catch (error) {
+        alert('Analysis failed: ' + error.message);
+    } finally {
+        document.getElementById('loading').style.display = 'none';
+    }
+}
+
+function displayResults(data) {
+    // Severity badge
+    const severityDiv = document.getElementById('severity-display');
+    severityDiv.innerHTML = `<span class="severity-badge ${data.severity?.toLowerCase()}">${data.severity}</span>
+    ${data.attack_detected ? '<span style="color:#dc3545; font-size:13px;">⚠️ ATTACK DETECTED</span>' : '<span style="color:#28a745; font-size:13px;">✅ No Attack Detected</span>'}`;
+    
+    document.getElementById('attack-type').textContent = data.attack_type || 'N/A';
+    document.getElementById('mitre-technique').textContent = data.mitre_technique || 'N/A';
+    document.getElementById('mitre-tactic').textContent = data.mitre_tactic || '';
+    document.getElementById('summary').textContent = data.summary || 'N/A';
+    document.getElementById('fp-chance').textContent = data.false_positive_chance || 'N/A';
+    document.getElementById('confidence').textContent = data.confidence || 'N/A';
+    
+    // Actions list
+    const actionsEl = document.getElementById('actions');
+    actionsEl.innerHTML = (data.immediate_actions || []).map(a => `<li>${a}</li>`).join('');
+    
+    const stepsEl = document.getElementById('steps');
+    stepsEl.innerHTML = (data.investigation_steps || []).map(s => `<li>${s}</li>`).join('');
+    
+    document.getElementById('results').style.display = 'block';
+}
+
+function updateStats(data) {
+    stats.total++;
+    if (data.severity === 'Critical') stats.critical++;
+    if (data.severity === 'High') stats.high++;
+    if (data.attack_detected) stats.attacks++;
+    
+    document.getElementById('total-analyses').textContent = stats.total;
+    document.getElementById('critical-count').textContent = stats.critical;
+    document.getElementById('high-count').textContent = stats.high;
+    document.getElementById('attacks-detected').textContent = stats.attacks;
+}
+
+async function exportPDF() {
+    if (!currentAnalysis) return;
+    
+    const response = await fetch('/export_pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            analysis: currentAnalysis,
+            log: document.getElementById('log-input').value
+        })
+    });
+    
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'SOC_Report.pdf';
+    a.click();
+}
+
+function clearAll() {
+    document.getElementById('log-input').value = '';
+    document.getElementById('results').style.display = 'none';
+    document.getElementById('placeholder').style.display = 'block';
+    currentAnalysis = null;
+}
+</script>
+
+</body>
+</html>
