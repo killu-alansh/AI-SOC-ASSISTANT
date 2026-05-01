@@ -12,7 +12,7 @@ load_dotenv()
 app = Flask(__name__)
 
 # ✅ Gemini client (NEW SDK)
-client = genai.Client(api_key=os.getenv("AIzaSyCMDDkIYXOQYgGkW69jBjYSYNF-kAToqPE"))
+client = genai.Client(api_key=os.getenv(GEMINI_API_KEY"))
 
 
 # ---------------- DATABASE ---------------- #
